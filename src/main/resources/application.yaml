@@ -1,0 +1,22 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:7432/park_db
+    username: admin
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  jackson:
+    default-property-inclusion: non_null
+
+app:
+  jwt:
+    hmac-secret: "qS7YdONu9nV4i7Luj8yInMWhd9t9hvhjqf5q1YO4gkI="
+  issuer: "http://localhost:8080"
