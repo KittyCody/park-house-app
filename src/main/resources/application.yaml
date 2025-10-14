@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:7432/park_db
-    username: admin
-    password: password
+    url: ${DB_URL:jdbc:postgresql://localhost:7432/park_db}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:}
   jpa:
     hibernate:
       ddl-auto: update
@@ -17,6 +17,9 @@ spring:
     default-property-inclusion: non_null
 
 app:
-  jwt:
-    hmac-secret: "qS7YdONu9nV4i7Luj8yInMWhd9t9hvhjqf5q1YO4gkI="
-  issuer: "http://localhost:8080"
+  issuer: ${ISSUER:http://localhost:8080}
+  keystore:
+    location: ${KEYSTORE_LOCATION:file:${user.dir}/jwt-keys.p12}
+    password: ${KEYSTORE_PASSWORD:}
+    key-alias: ${KEY_ALIAS:jwt-rs256}
+    key-password: ${KEY_PASSWORD:}
