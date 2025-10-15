@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,7 +24,9 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.security.KeyStore;
 import java.security.KeyStore.PrivateKeyEntry;
@@ -73,7 +76,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/auth/register"))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/register", "/actuator/health").permitAll()
-                        .requestMatchers("/api/**").hasAuthority("SCOPE_api.read")
+                        // allow POST create with api.write, reads with api.read
+                        .requestMatchers(HttpMethod.POST, "/api/tickets/entries").hasAuthority("SCOPE_api.write")
+                        .requestMatchers(HttpMethod.GET, "/api/**").hasAuthority("SCOPE_api.read")
                         .anyRequest().authenticated()
                 )
                 .formLogin(Customizer.withDefaults())
@@ -127,8 +132,8 @@ public class SecurityConfig {
     }
 
     private JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(this::extractAuthorities);
+        var converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(this::mergeScopesAndRoles);
         return converter;
     }
 
@@ -142,5 +147,20 @@ public class SecurityConfig {
                     .collect(Collectors.toSet());
         }
         return Set.of();
+    }
+
+    private Collection<GrantedAuthority> mergeScopesAndRoles(Jwt jwt) {
+        var scopesConv = new JwtGrantedAuthoritiesConverter(); // default prefix SCOPE_
+        var authorities = new java.util.HashSet<>(scopesConv.convert(jwt));
+
+        Object rolesObj = jwt.getClaim("roles");
+        if (rolesObj instanceof Collection<?> col) {
+            authorities.addAll(col.stream()
+                    .map(Object::toString)
+                    .map(r -> r.startsWith("ROLE_") ? r : "ROLE_" + r)
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toSet()));
+        }
+        return authorities;
     }
 }
