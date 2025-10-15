@@ -33,7 +33,6 @@ import java.security.KeyStore.PrivateKeyEntry;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Collection;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -76,7 +75,6 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/auth/register"))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/register", "/actuator/health").permitAll()
-                        // allow POST create with api.write, reads with api.read
                         .requestMatchers(HttpMethod.POST, "/api/tickets/entries").hasAuthority("SCOPE_api.write")
                         .requestMatchers(HttpMethod.GET, "/api/**").hasAuthority("SCOPE_api.read")
                         .anyRequest().authenticated()
@@ -137,20 +135,8 @@ public class SecurityConfig {
         return converter;
     }
 
-    private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-        final var rolesObj = jwt.getClaim("roles");
-        if (rolesObj instanceof Collection<?> col) {
-            return col.stream()
-                    .map(Object::toString)
-                    .map(r -> r.startsWith("ROLE_") ? r : "ROLE_" + r)
-                    .map(org.springframework.security.core.authority.SimpleGrantedAuthority::new)
-                    .collect(Collectors.toSet());
-        }
-        return Set.of();
-    }
-
     private Collection<GrantedAuthority> mergeScopesAndRoles(Jwt jwt) {
-        var scopesConv = new JwtGrantedAuthoritiesConverter(); // default prefix SCOPE_
+        var scopesConv = new JwtGrantedAuthoritiesConverter();
         var authorities = new java.util.HashSet<>(scopesConv.convert(jwt));
 
         Object rolesObj = jwt.getClaim("roles");
