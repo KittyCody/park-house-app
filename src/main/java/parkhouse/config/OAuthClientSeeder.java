@@ -32,6 +32,7 @@ public class OAuthClientSeeder {
                     .redirectUri("https://insomnia.rest/callback")
                     .scope(OidcScopes.OPENID)
                     .scope("api.read")
+                    .scope("api.write")
                     .build();
 
             clients.save(client);
