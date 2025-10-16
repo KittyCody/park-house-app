@@ -6,4 +6,5 @@ import parkhouse.domain.Ticket;
 import java.util.UUID;
 
 public interface TicketRepository extends JpaRepository<Ticket, UUID> {
+    int countAllByTimeOfExitIsNull();
 }

@@ -56,33 +56,5 @@ public class Ticket {
         return timeOfExit;
     }
 
-    private boolean isPendingPayment() {
-        return timeOfPayment == null;
-    }
-
-    private boolean isAlreadyExited() {
-        return timeOfExit != null;
-    }
-
-    public String exit(UUID exitGateId, LocalDateTime now) {
-
-        if (isPendingPayment()) {
-            throw new IllegalStateException ("Pending payment");
-        }
-
-        if (isAlreadyExited()) {
-            throw new IllegalStateException("already exited");
-        }
-
-        this.exitGateId = exitGateId;
-        this.timeOfExit = now;
-
-        return null;
-    }
-
-    public void pay(LocalDateTime timeOfPayment) {
-        this.timeOfPayment = timeOfPayment;
-    }
-
 }
 
