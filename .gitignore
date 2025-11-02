@@ -34,3 +34,4 @@ build/
 .vscode/
 node_modules
 *.p12
+.DS_Store
