@@ -39,7 +39,7 @@ public class TicketService {
         return tickets.save(ticket);
     }
 
-    public Ticket get(UUID id) {
+    public Ticket getTicket(UUID id) {
         return tickets.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Ticket with id " + id + " not found"));
     }
