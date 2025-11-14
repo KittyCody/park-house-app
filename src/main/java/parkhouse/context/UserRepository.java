@@ -6,6 +6,6 @@ import parkhouse.domain.User;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
-    Optional<User> findByUsername(String email);
-    boolean existsByUsername(String email);
+    Optional<User> findByUsername(String name);
+    boolean existsByUsername(String name);
 }

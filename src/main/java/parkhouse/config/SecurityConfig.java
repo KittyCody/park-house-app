@@ -13,12 +13,17 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
@@ -26,17 +31,19 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.security.KeyStore;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Collection;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Value("${app.issuer}")
@@ -72,11 +79,12 @@ public class SecurityConfig {
     SecurityFilterChain appSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher("/api/**", "/actuator/**", "/login")
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/auth/register"))
+                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/register", "/actuator/health").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/tickets/entries").hasAuthority("SCOPE_api.write")
-                        .requestMatchers(HttpMethod.GET, "/api/**").hasAuthority("SCOPE_api.read")
+                        .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(Customizer.withDefaults())
@@ -84,6 +92,21 @@ public class SecurityConfig {
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
                 );
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return source;
     }
 
     @Bean
@@ -97,17 +120,18 @@ public class SecurityConfig {
     public JWKSource<SecurityContext> jwkSource() throws Exception {
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(keystoreLocation.getInputStream(), keystorePassword.toCharArray());
+
         PrivateKeyEntry entry = (PrivateKeyEntry) ks.getEntry(
                 keyAlias,
                 new KeyStore.PasswordProtection(keyPassword.toCharArray())
         );
 
         RSAPrivateKey privateKey = (RSAPrivateKey) entry.getPrivateKey();
-        RSAPublicKey  publicKey  = (RSAPublicKey)  entry.getCertificate().getPublicKey();
+        RSAPublicKey publicKey = (RSAPublicKey) entry.getCertificate().getPublicKey();
 
         RSAKey rsa = new RSAKey.Builder(publicKey)
                 .privateKey(privateKey)
-                .keyID("kid-" + UUID.randomUUID())
+                .keyID("kid-6cc8cbf5-a83c-4253-86dc-a1c59d69e0a2")
                 .algorithm(JWSAlgorithm.RS256)
                 .build();
 
@@ -115,19 +139,36 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withJwkSetUri(issuer + "/oauth2/jwks").build();
+    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
+        return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
     }
 
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
         return context -> {
-            var authorities = context.getPrincipal().getAuthorities().stream()
+            if (AuthorizationGrantType.CLIENT_CREDENTIALS.equals(context.getAuthorizationGrantType())) {
+                RegisteredClient client = context.getRegisteredClient();
+                context.getClaims().subject(client.getId());
+                context.getClaims().claim("client_id", client.getClientId());
+
+                Object rolesObj = client.getClientSettings().getSetting("roles");
+
+                if (rolesObj instanceof List<?> roles) {
+                    context.getClaims().claim("roles", roles);
+                }
+
+                return;
+            }
+
+            var roles = context.getPrincipal().getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toSet());
-            context.getClaims().claim("roles", authorities);
+                    .filter(a -> a.startsWith("ROLE_"))
+                    .toList();
+
+            context.getClaims().claim("roles", roles);
         };
     }
+
 
     private JwtAuthenticationConverter jwtAuthenticationConverter() {
         var converter = new JwtAuthenticationConverter();
@@ -136,17 +177,18 @@ public class SecurityConfig {
     }
 
     private Collection<GrantedAuthority> mergeScopesAndRoles(Jwt jwt) {
+        // 1) normal scopes -> SCOPE_xxx
         var scopesConv = new JwtGrantedAuthoritiesConverter();
         var authorities = new java.util.HashSet<>(scopesConv.convert(jwt));
 
-        Object rolesObj = jwt.getClaim("roles");
-        if (rolesObj instanceof Collection<?> col) {
-            authorities.addAll(col.stream()
-                    .map(Object::toString)
-                    .map(r -> r.startsWith("ROLE_") ? r : "ROLE_" + r)
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toSet()));
+        // 2) our "roles" claim -> ROLE_xxx
+        var roles = jwt.getClaimAsStringList("roles");
+        if (roles != null) {
+            roles.forEach(r ->
+                    authorities.add(new SimpleGrantedAuthority(r))   // r is already ROLE_...
+            );
         }
+
         return authorities;
     }
 }

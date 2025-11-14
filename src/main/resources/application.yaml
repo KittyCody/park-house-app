@@ -3,8 +3,8 @@ server:
 
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:7432/park_db}
-    username: ${DB_USERNAME:admin}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
     hibernate:
@@ -17,9 +17,9 @@ spring:
     default-property-inclusion: non_null
 
 app:
-  issuer: ${ISSUER:http://localhost:8080}
+  issuer: ${ISSUER}
   keystore:
-    location: ${KEYSTORE_LOCATION:classpath:jwt-test.p12}
-    password: ${KEYSTORE_PASSWORD:testpass}
-    key-alias: ${KEY_ALIAS:test}
-    key-password: ${KEY_PASSWORD:testpass}
+    location: ${KEYSTORE_LOCATION}
+    password: ${KEYSTORE_PASSWORD}
+    key-alias: ${KEY_ALIAS}
+    key-password: ${KEY_PASSWORD}
