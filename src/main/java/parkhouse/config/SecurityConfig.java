@@ -9,6 +9,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
@@ -44,6 +45,7 @@ import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
+@Profile("!test")
 public class SecurityConfig {
 
     @Value("${app.issuer}")
