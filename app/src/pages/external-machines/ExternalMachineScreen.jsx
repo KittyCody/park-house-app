@@ -12,8 +12,9 @@ export const ExternalMachineScreen = () => {
   useEffect(() => {
     parkingService.getStatus()
       .then(status => {
+        console.log(status)
         setAvailableSpaces(status.availableSpaces)
-        setIsOpen(status.isOpen)
+        setIsOpen(status.isOperational)
       })
       .catch(err => {
         setError("could not fetch parking status")
@@ -27,7 +28,7 @@ export const ExternalMachineScreen = () => {
       {error && <p>{error}</p>}
       {isOpen
         ? <>
-          <p>{availableSpaces ? `${availableSpaces} spaces left` : 'No spaces left'}</p>
+          <p>{availableSpaces} spaces left</p>
           {availableSpaces > 0
             ? <PrintTicketComponent/>
             : <ParkingFullComponent/>}

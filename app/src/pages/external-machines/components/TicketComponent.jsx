@@ -1,7 +1,8 @@
 export const TicketComponent = ({ticket}) => {
   return (
     <>
-      <p>{ticket.timeOfEntry}</p>
+      <p>Entered at: {ticket.timeOfEntry}</p>
+      <p>Entered from gate: {ticket.entryGateId}</p>
     </>
   )
 }

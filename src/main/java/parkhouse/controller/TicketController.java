@@ -1,18 +1,20 @@
 package parkhouse.controller;
 
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-import parkhouse.dto.EntryRequest;
 import parkhouse.dto.TicketResponse;
 import parkhouse.service.TicketService;
 
+import java.util.UUID;
+
 @RestController
-@RequestMapping("/api/tickets")
+@RequestMapping("/api/v1/tickets")
 public class TicketController {
 
     private final TicketService tickets;
@@ -22,11 +24,14 @@ public class TicketController {
     }
 
     @PostMapping("/entries")
-    public ResponseEntity<TicketResponse> createEntry(@RequestBody @Valid EntryRequest body,
-        UriComponentsBuilder uri) {
+    @PreAuthorize("hasRole('ENTRY_GATE_MACHINE')")
+    public ResponseEntity<TicketResponse> createEntry(@AuthenticationPrincipal Jwt token,
+                                                      UriComponentsBuilder uri) {
+        var gateId = UUID.fromString(token.getSubject());
 
-        var created = tickets.createEntry(body.entryGateId());
-        var location = uri.path("/api/tickets/{id}").buildAndExpand(created.getId()).toUri();
+        var created = tickets.createEntry(gateId);
+        var location = uri.path("/api/v1/tickets/{id}").buildAndExpand(created.getId()).toUri();
+
         return ResponseEntity.created(location).body(TicketResponse.of(created));
     }
 }
