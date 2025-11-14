@@ -19,8 +19,8 @@ spring:
 app:
   issuer: ${ISSUER}
   keystore:
-    location: ${KEYSTORE_LOCATION:classpath:jwt-test.p12}
-    password: ${KEYSTORE_PASSWORD:testpass}
+    location: ${KEYSTORE_LOCATION}
+    password: ${KEYSTORE_PASSWORD}
     key-alias: ${KEY_ALIAS:test}
-    key-password: ${KEY_PASSWORD:testpass}
+    key-password: ${KEY_PASSWORD}
 

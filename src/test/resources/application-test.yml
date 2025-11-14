@@ -1,9 +1,12 @@
 spring:
   datasource:
-    url: ${DB_URL_TEST}
-    username: ${DB_USERNAME_TEST}
-    password: ${DB_PASSWORD_TEST}
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: park_house_test
+    password: no_secrets_among_devs
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
 
+app:
+  issuer: http://test-issuer
