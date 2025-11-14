@@ -12,5 +12,21 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  app:
+    image: ghcr.io/kittycody/park-house-app:latest
+    depends_on:
+      - postgres
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/park_db
+      DB_USERNAME: admin
+      DB_PASSWORD: password
+      ISSUER: http://localhost:8080
+      KEYSTORE_LOCATION: file:/app/jwt-keys.p12
+      KEYSTORE_PASSWORD: your_pass
+      KEY_ALIAS: jwt-rs256
+      KEY_PASSWORD: your_pass
+    ports:
+      - "8080:8080"
+
 volumes:
   postgres_data:
