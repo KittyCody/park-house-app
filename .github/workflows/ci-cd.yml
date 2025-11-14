@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout du code
+      - name: Checkout of the code
         uses: actions/checkout@v4
 
       - name: Setup JDK 21
@@ -37,7 +37,7 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout du code
+      - name: Checkout of the code
         uses: actions/checkout@v4
 
       - name: Setup JDK 21
@@ -46,7 +46,7 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Build JAR Spring Boot (sans tests)
+      - name: Build JAR Spring Boot (without tests)
         run: |
           ./mvnw -B package -DskipTests
 
@@ -56,16 +56,16 @@ jobs:
 
       - name: Build image Docker
         env:
-          IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/park-house-app
+          IMAGE_NAME: ghcr.io/kittycody/park-house-app
         run: |
           docker build \
             -t $IMAGE_NAME:${{ github.sha }} \
             -t $IMAGE_NAME:latest \
             .
 
-      - name: Push des tags Docker
+      - name: Push the tags Docker
         env:
-          IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/park-house-app
+          IMAGE_NAME: ghcr.io/kittycody/park-house-app
         run: |
           docker push $IMAGE_NAME:${{ github.sha }}
           docker push $IMAGE_NAME:latest
