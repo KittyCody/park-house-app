@@ -10,8 +10,10 @@ import org.springframework.context.annotation.Import;
 class ParkHouseApplicationTests {
 
     @Test
-    @Disabled("Context requires external secrets (ISSUER, keystore); skipped in CI")
+    @Disabled("Disabled -> the application context requires external secrets (ISSUER, keystore) that are not available in CI.")
     void contextLoads() {
+        // This test normally loads the full Spring application context,
+        // but it is disabled for CI because it depends on external secrets.
     }
-
 }
+
