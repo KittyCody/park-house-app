@@ -19,7 +19,7 @@ spring:
 app:
   issuer: ${ISSUER:http://localhost:8080}
   keystore:
-    location: ${KEYSTORE_LOCATION:file:${user.dir}/jwt-keys.p12}
-    password: ${KEYSTORE_PASSWORD:}
-    key-alias: ${KEY_ALIAS:jwt-rs256}
-    key-password: ${KEY_PASSWORD:}
+    location: ${KEYSTORE_LOCATION:classpath:jwt-test.p12}
+    password: ${KEYSTORE_PASSWORD:testpass}
+    key-alias: ${KEY_ALIAS:test}
+    key-password: ${KEY_PASSWORD:testpass}
