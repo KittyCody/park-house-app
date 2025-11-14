@@ -32,10 +32,13 @@ public class TicketService {
     public Ticket createEntry(UUID entryGateId) {
 
         validateOperationalHours();
-        validateCapacity();
+        if (getAvailableSpaces() < 1) {
+            throw new NotEnoughSpaces();
+        }
 
         var now = LocalDateTime.now(clock);
         var ticket = new Ticket(entryGateId, now);
+
         return tickets.save(ticket);
     }
 
@@ -54,11 +57,10 @@ public class TicketService {
         }
     }
 
-    private void validateCapacity() {
-        int vehicles = tickets.countAllByTimeOfExitIsNull();
-        long available = floors.sumCapacity().orElse(0L);
-        if (available == 0 || vehicles >= available) {
-            throw new NotEnoughSpaces();
-        }
+    public long getAvailableSpaces() {
+        int parkedVehicles = tickets.countAllByTimeOfExitIsNull();
+        long availableSpots = floors.sumCapacity().orElse(0L);
+
+        return Math.max(0, availableSpots - parkedVehicles);
     }
 }
