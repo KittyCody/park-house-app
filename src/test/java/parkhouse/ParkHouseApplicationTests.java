@@ -1,16 +1,15 @@
 package parkhouse;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+@Import(TestcontainersConfiguration.class)
+@SpringBootTest
 class ParkHouseApplicationTests {
 
     @Test
-    void simpleMathTest() {
-        // Simple unit test to keep the test suite valid in CI
-        assertEquals(4, 2 + 2);
+    void contextLoads() {
     }
+
 }
-
-
