@@ -13,6 +13,7 @@ import parkhouse.domain.error.InvalidOperationalHours;
 import parkhouse.domain.error.NotEnoughSpaces;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -102,5 +103,52 @@ public class TicketService {
                 capacity, parkedVehicles, available);
 
         return available;
+    }
+
+    public int calculatePrice(UUID ticketId) {
+
+        var ticket = tickets.findById(ticketId)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket with id " + ticketId + " not found"));
+
+        var now = LocalDateTime.now(clock);
+
+        long hours = Duration.between(ticket.getTimeOfEntry(), now).toHours();
+        hours = Math.max(1, hours);
+
+        return (int) hours * 2;
+    }
+
+    @Transactional
+    public void pay(UUID ticketId) {
+
+        var ticket = tickets.findById(ticketId)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket with id " + ticketId + " not found"));
+
+        if (ticket.getTimeOfPayment() != null) {
+            return;  //already paid
+        }
+
+        ticket.setTimeOfPayment(LocalDateTime.now(clock));
+        tickets.save(ticket);
+    }
+
+    @Transactional
+    public void exit(UUID ticketId, UUID exitGateId) {
+
+        var ticket = tickets.findById(ticketId)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket with id " + ticketId + " not found"));
+
+        if (ticket.getTimeOfPayment() != null) {
+            throw new IllegalStateException("Ticket with id " + ticketId + " not paid");
+        }
+
+        if (ticket.getTimeOfExit() != null) {
+            return;
+        }
+
+        ticket.setExitGateId(exitGateId);
+        ticket.setTimeOfExit(LocalDateTime.now(clock));
+
+        tickets.save(ticket);
     }
 }

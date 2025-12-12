@@ -48,6 +48,10 @@ public class Ticket {
         return exitGateId;
     }
 
+    public void setExitGateId(UUID exitGateId) {
+        this.exitGateId = exitGateId;
+    }
+
     public LocalDateTime getTimeOfEntry() {
         return timeOfEntry;
     }
@@ -56,5 +60,16 @@ public class Ticket {
         return timeOfExit;
     }
 
+    public void setTimeOfExit(LocalDateTime timeOfExit) {
+        this.timeOfExit = timeOfExit;
+    }
+
+    public LocalDateTime getTimeOfPayment() {
+        return timeOfPayment;
+    }
+
+    public void setTimeOfPayment(LocalDateTime timeOfpayment) {
+        this.timeOfPayment = timeOfpayment;
+    }
 }
 
