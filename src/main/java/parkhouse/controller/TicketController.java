@@ -6,9 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import parkhouse.dto.TicketResponse;
 import parkhouse.service.TicketService;
@@ -45,4 +43,42 @@ public class TicketController {
 
         return ResponseEntity.created(location).body(TicketResponse.of(created));
     }
+
+    @GetMapping("/{id}/price")
+    @PreAuthorize("hasRole('EXIT_GATE_MACHINE')")
+    public ResponseEntity<Integer> getPrice(@PathVariable UUID id) {
+
+        log.info("Price calculation request for ticket {}", id);
+
+        int price = tickets.calculatePrice(id);
+
+        return ResponseEntity.ok(price);
+    }
+
+    @PostMapping("/{id}/pay")
+    @PreAuthorize("hasRole('EXIT_GATE_MACHINE')")
+    public ResponseEntity<Void> pay(@PathVariable UUID id) {
+
+        log.info("Payment requested for ticket {}", id);
+
+        tickets.pay(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/exit")
+    @PreAuthorize("hasRole('EXIT_GATE_MACHINE')")
+    public ResponseEntity<Void> exit(@AuthenticationPrincipal Jwt token,
+                                     @PathVariable UUID id) {
+
+        var gateId = UUID.fromString(token.getSubject());
+
+        log.info("Exit requested for ticket {} at gate {}", id, gateId);
+
+        tickets.exit(id, gateId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+
 }
