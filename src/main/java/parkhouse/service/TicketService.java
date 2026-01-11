@@ -144,6 +144,7 @@ public class TicketService {
 
         if (ticket.getTimeOfExit() != null) {
             return;
+            //TODO: ticket already exited, throw err;
         }
 
         ticket.setExitGateId(exitGateId);
