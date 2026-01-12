@@ -1,8 +1,7 @@
 package parkhouse.domain;
 
-import jakarta.annotation.Nullable;
-import parkhouse.domain.error.InvalidOperationalHours;
 import jakarta.persistence.*;
+import parkhouse.domain.error.InvalidOperationalHours;
 
 @Entity
 @Table(name = "parking_settings")
@@ -16,11 +15,12 @@ public class ParkingSettings {
 
     private int openHour;
     private int closeHour;
+    private int pricePerHour;
 
     protected ParkingSettings() {
     }
 
-    public ParkingSettings(int openHour, int closeHour) {
+    public ParkingSettings(int openHour, int closeHour, int pricePerHour) {
 
         if (!isValidOperationalHours(openHour, closeHour)) {
             throw new InvalidOperationalHours();
@@ -28,6 +28,7 @@ public class ParkingSettings {
 
         this.openHour = openHour;
         this.closeHour = closeHour;
+        this.pricePerHour = pricePerHour;
     }
 
     public static boolean isValidOperationalHours(int openHour, int closeHour) {
@@ -42,19 +43,20 @@ public class ParkingSettings {
     }
 
     public static ParkingSettings createDefault() {
-        return new ParkingSettings(8, 22);
+        return new ParkingSettings(8, 22, 3);
     }
 
-    @Nullable
-    public InvalidOperationalHours updateOperationalHours(int openHour, int closeHour) {
+    public void updateOperationalHours(int openHour, int closeHour) {
         if (!isValidOperationalHours(openHour, closeHour)) {
-            return new InvalidOperationalHours();
+            throw new InvalidOperationalHours();
         }
 
         this.openHour = openHour;
         this.closeHour = closeHour;
+    }
 
-        return null;
+    public void updatePrice(int pricePerHour) {
+        this.pricePerHour = pricePerHour;
     }
 
     public int openHour() {
@@ -63,6 +65,10 @@ public class ParkingSettings {
 
     public int closeHour() {
         return closeHour;
+    }
+
+    public int pricePerHour() {
+        return pricePerHour;
     }
 
     public int getId() {

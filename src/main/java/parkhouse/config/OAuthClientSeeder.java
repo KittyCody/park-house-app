@@ -32,6 +32,10 @@ public class OAuthClientSeeder {
             if (clients.findByClientId("parking-internal-machine-01") == null)
                 createClient("parking-internal-machine-01", clients, encoder,
                         List.of("ROLE_GATE_MACHINE", "ROLE_EXIT_GATE_MACHINE"));
+
+            if (clients.findByClientId("parking-admin") == null)
+                createClient("parking-admin", clients, encoder,
+                        List.of("ROLE_ADMIN"));
         };
     }
 

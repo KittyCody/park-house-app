@@ -1,8 +1,9 @@
 import './App.css'
 import {useAuth} from "./providers/AuthContext.jsx";
 import {ProblemScreen} from "./pages/ProblemScreen.jsx";
-import {ExternalMachineScreen} from "./pages/external-machines/ExternalMachineScreen.jsx";
 import {InternalMachineScreen} from "./pages/internal-machines/InternalMachineScreen.jsx";
+import {BrowserRouter, Navigate, Route, Routes} from "react-router";
+import {ExternalMachineScreen} from "./pages/external-machines/ExternalMachineScreen.jsx";
 
 function App() {
 
@@ -18,9 +19,15 @@ function App() {
 
   switch (machineType) {
     case 'internal_machine':
-      return <InternalMachineScreen/>
+      return <BrowserRouter>
+        <Routes>
+          <Route path="/exit/:ticketId" element={<InternalMachineScreen/>}/>
+          <Route path="/" element={<Navigate to="/exit/unknown"/>}/>
+        </Routes>
+      </BrowserRouter>
     case 'external_machine':
       return <ExternalMachineScreen/>
+
     default:
       return <ProblemScreen problemMessage="Configuration issue: machine type"/>
   }
