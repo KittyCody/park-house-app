@@ -3,7 +3,8 @@ package parkhouse.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import parkhouse.context.FloorRepository;
 import parkhouse.context.ParkingSettingsRepository;
@@ -12,14 +13,15 @@ import parkhouse.domain.ParkingSettings;
 import parkhouse.domain.Ticket;
 import parkhouse.domain.error.InvalidOperationalHours;
 
-import java.time.*;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
-
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class TicketServiceTest {
@@ -41,7 +43,7 @@ public class TicketServiceTest {
         ticketService = new TicketService(tickets, floors, parkingSettings, clock);
 
         when(parkingSettings.findTopByOrderByIdDesc())
-                .thenReturn(Optional.of(new ParkingSettings(8, 22)));
+                .thenReturn(Optional.of(new ParkingSettings(8, 22, 3)));
         lenient().when(floors.sumCapacity()).thenReturn(Optional.of(100L));
         lenient().when(tickets.countAllByTimeOfExitIsNull()).thenReturn(10);
     }
@@ -76,7 +78,7 @@ public class TicketServiceTest {
                 new TicketService(tickets, floors, parkingSettings, nightClock);
 
         when(parkingSettings.findTopByOrderByIdDesc())
-                .thenReturn(Optional.of(new ParkingSettings(8, 22)));
+                .thenReturn(Optional.of(new ParkingSettings(8, 22, 3)));
 
         assertThatThrownBy(() -> closedService.createEntry(UUID.randomUUID()))
                 .isInstanceOf(InvalidOperationalHours.class);

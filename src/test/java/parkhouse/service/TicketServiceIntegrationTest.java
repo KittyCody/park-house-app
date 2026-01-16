@@ -56,7 +56,7 @@ class TicketServiceIntegrationTest {
     @Test
     void createEntry_persistsTicket_inRealDatabase() {
         floors.save(new Floor(100, LocalDateTime.now(clock)));
-        parkingSettings.save(new ParkingSettings(0, 23));
+        parkingSettings.save(new ParkingSettings(0, 23, 3));
 
         UUID gateId = UUID.randomUUID();
 
@@ -70,7 +70,7 @@ class TicketServiceIntegrationTest {
     @Test
     void createEntry_throwsInvalidOperationalHours_whenClosed() {
         floors.save(new Floor(100, LocalDateTime.now(clock)));
-        parkingSettings.save(new ParkingSettings(8, 22));
+        parkingSettings.save(new ParkingSettings(8, 22, 3));
 
         UUID gateId = UUID.randomUUID();
 
@@ -81,7 +81,7 @@ class TicketServiceIntegrationTest {
     @Test
     void createEntry_throwsNotEnoughSpaces_whenNoCapacityLeft() {
         floors.save(new Floor(1, LocalDateTime.now(clock)));
-        parkingSettings.save(new ParkingSettings(0, 23));
+        parkingSettings.save(new ParkingSettings(0, 23, 3));
 
         UUID gateId1 = UUID.randomUUID();
         UUID gateId2 = UUID.randomUUID();

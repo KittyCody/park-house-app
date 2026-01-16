@@ -30,10 +30,26 @@ keytool -genkeypair -alias jwt-rs256 \
   -storepass your_pass
 
 ## Issue an Access Token
-A development client is seeded: parking-client / test123.
+A development client is seeded: parking-external-machine-01, parking-internal-machine-01, parking-admin / change_me
+```
 
 ```bash
-curl -u parking-client:test123 \
+curl -u parking-external-machine-01:change_me \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=client_credentials&scope=api.read" \
-  http://localhost:8080/oauth2/token
+  -d "grant_type=client_credentials" \
+  http://localhost:5140/oauth2/token
+```
+
+```bash
+curl -u parking-internal-machine-01:change_me \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials" \
+  http://localhost:5140/oauth2/token
+```
+
+```bash
+curl -u parking-admin:change_me \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials" \
+  http://localhost:5140/oauth2/token
+```

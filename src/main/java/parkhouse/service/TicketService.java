@@ -110,12 +110,18 @@ public class TicketService {
         var ticket = tickets.findById(ticketId)
                 .orElseThrow(() -> new IllegalArgumentException("Ticket with id " + ticketId + " not found"));
 
+        var settings = parkingSettings.findTopByOrderByIdDesc()
+                .orElseGet(() -> {
+                    log.warn("No configuration found → using default values");
+                    return ParkingSettings.createDefault();
+                });
+
         var now = LocalDateTime.now(clock);
 
         long hours = Duration.between(ticket.getTimeOfEntry(), now).toHours();
         hours = Math.max(1, hours);
 
-        return (int) hours * 2;
+        return (int) hours * settings.pricePerHour();
     }
 
     @Transactional
@@ -138,13 +144,12 @@ public class TicketService {
         var ticket = tickets.findById(ticketId)
                 .orElseThrow(() -> new IllegalArgumentException("Ticket with id " + ticketId + " not found"));
 
-        if (ticket.getTimeOfPayment() != null) {
+        if (ticket.getTimeOfPayment() == null) {
             throw new IllegalStateException("Ticket with id " + ticketId + " not paid");
         }
 
         if (ticket.getTimeOfExit() != null) {
-            return;
-            //TODO: ticket already exited, throw err;
+            throw new IllegalStateException("Ticket with id " + ticketId + " already exited");
         }
 
         ticket.setExitGateId(exitGateId);
