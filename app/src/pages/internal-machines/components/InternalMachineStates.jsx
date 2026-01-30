@@ -40,7 +40,7 @@ const Row = ({label, value}) => (
   </Stack>
 );
 
-/** 1) Ticket needs payment */
+/** Ticket needs payment */
 export const PaymentRequiredScreen = ({entryTime, durationMinutes, amountCents}) => {
   return (
     <Paper elevation={4} sx={{p: 2.5, borderRadius: 3}}>
@@ -81,7 +81,7 @@ export const PaymentRequiredScreen = ({entryTime, durationMinutes, amountCents})
   );
 };
 
-/** 2) Payment failed */
+/** payment failed */
 export const PaymentFailedScreen = ({message}) => {
   const text = ERROR_MESSAGES[message] ?? ERROR_MESSAGES.DEFAULT;
 
@@ -110,7 +110,7 @@ export const PaymentFailedScreen = ({message}) => {
   );
 };
 
-/** 3) Invalid ticket */
+/** Invalid ticket */
 export const InvalidTicketScreen = ({reason}) => {
   return (
     <Paper elevation={4} sx={{p: 2.5, borderRadius: 3}}>
@@ -135,7 +135,7 @@ export const InvalidTicketScreen = ({reason}) => {
   );
 };
 
-/** 4) Payment accepted OR already paid */
+/** Payment accepted OR already paid */
 export const PaymentAcceptedScreen = ({alreadyPaid}) => {
   return (
     <Paper elevation={4} sx={{p: 2.5, borderRadius: 3, bgcolor: "success.light"}}>
