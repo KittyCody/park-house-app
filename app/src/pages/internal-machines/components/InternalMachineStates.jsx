@@ -4,6 +4,14 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import BlockIcon from "@mui/icons-material/Block";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
+const ERROR_MESSAGES = {
+  CARD_DECLINED: "Card declined. Please try another card.",
+  NETWORK_CONNECTION_ISSUE: "Network error. Please try again.",
+  INVALID_TICKET: "Invalid or unreadable ticket.",
+  ALREADY_PAID: "This ticket has already been paid.",
+  DEFAULT: "Payment failed. Please contact assistance.",
+};
+
 const formatMoney = (cents) =>
   new Intl.NumberFormat(undefined, {style: "currency", currency: "EUR"}).format((cents ?? 0) / 100);
 
@@ -75,6 +83,8 @@ export const PaymentRequiredScreen = ({entryTime, durationMinutes, amountCents})
 
 /** 2) Payment failed */
 export const PaymentFailedScreen = ({message}) => {
+  const text = ERROR_MESSAGES[message] ?? ERROR_MESSAGES.DEFAULT;
+
   return (
     <Paper elevation={4} sx={{p: 2.5, borderRadius: 3}}>
       <Stack spacing={2} alignItems="center">
@@ -93,7 +103,7 @@ export const PaymentFailedScreen = ({message}) => {
           severity="error"
           sx={{width: "100%", fontSize: "1rem", "& .MuiAlert-message": {width: "100%"}}}
         >
-          <strong>Reason:</strong> {message || "Payment declined."}
+          <strong>Reason:</strong> {text}
         </Alert>
       </Stack>
     </Paper>

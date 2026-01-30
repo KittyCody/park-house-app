@@ -1,5 +1,6 @@
 import {useEffect, useMemo, useState} from "react";
-import {Alert, Box, Chip, Container, Paper, Stack, Typography} from "@mui/material";
+import {Alert, Box, Button, Chip, Container, Paper, Stack, TextField, Typography} from "@mui/material";
+import {useNavigate, useParams} from "react-router";
 import {ticketService} from "../../services/ticket-service.js";
 import {
   InvalidTicketScreen,
@@ -7,113 +8,155 @@ import {
   PaymentFailedScreen,
   PaymentRequiredScreen,
 } from "./components/InternalMachineStates.jsx";
-import {useParams} from "react-router";
+
+const isUuid = (s) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s ?? ""));
+
+const CHIP = {
+  LOADING: {label: "Loading…", color: "default", variant: "outlined"},
+  PAYMENT_REQUIRED: {label: "Payment", color: "primary", variant: "filled"},
+  PAID: {label: "Paid", color: "success", variant: "filled"},
+  PAYMENT_FAILED: {label: "Error", color: "error", variant: "filled"},
+  INVALID: {label: "Invalid", color: "warning", variant: "filled"},
+  ACCEPTED: {label: "Exit", color: "success", variant: "filled"},
+};
 
 export const InternalMachineScreen = () => {
-  const {ticketId} = useParams(); // route example: /exit/:ticketId
+  const {ticketId} = useParams();
+  const navigate = useNavigate();
 
-  // machine states
-  // "LOADING" | "PAYMENT_REQUIRED" | "PAYMENT_FAILED" | "INVALID" | "ACCEPTED"
   const [state, setState] = useState("LOADING");
   const [error, setError] = useState(undefined);
 
-  // data
-  const [entryTime, setEntryTime] = useState(undefined);
-  const [durationMinutes, setDurationMinutes] = useState(undefined);
-  const [amountCents, setAmountCents] = useState(undefined);
+  const [ticket, setTicket] = useState(undefined);
   const [invalidReason, setInvalidReason] = useState(undefined);
   const [paymentFailReason, setPaymentFailReason] = useState(undefined);
-  const [alreadyPaid, setAlreadyPaid] = useState(false);
 
-  const titleChip = useMemo(() => {
-    const map = {
-      LOADING: {label: "Loading…", color: "default", variant: "outlined"},
-      PAYMENT_REQUIRED: {label: "Payment", color: "primary", variant: "filled"},
-      PAYMENT_FAILED: {label: "Error", color: "error", variant: "filled"},
-      INVALID: {label: "Invalid", color: "warning", variant: "filled"},
-      ACCEPTED: {label: "Exit", color: "success", variant: "filled"},
-    };
-    return map[state] ?? map.LOADING;
-  }, [state]);
+  const [busy, setBusy] = useState(false);
+
+  const [scanValue, setScanValue] = useState("");
+
+  const titleChip = useMemo(() => CHIP[state] ?? CHIP.LOADING, [state]);
+
+  const resetUi = () => {
+    setError(undefined);
+    setPaymentFailReason(undefined);
+    setInvalidReason(undefined);
+    setTicket(undefined);
+    setBusy(false);
+  };
+
+  const loadStatus = async (id) => {
+    resetUi();
+    setState("LOADING");
+
+    if (!id || !isUuid(id)) {
+      setInvalidReason("INVALID_TICKET_ID");
+      setState("INVALID");
+      return;
+    }
+
+    try {
+      const data = await ticketService.getTicketStatus(id);
+      setTicket(data);
+
+      if (data.status === "INVALID") {
+        setInvalidReason(data.reason);
+        setState("INVALID");
+        return;
+      }
+
+      if (data.status === "PAYMENT_REQUIRED") {
+        setState("PAYMENT_REQUIRED");
+        return;
+      }
+
+      if (data.status === "PAID") {
+        // paid but not necessarily exited -> just show "Open barrier"
+        setState("PAID");
+        return;
+      }
+
+      setError("Unknown kiosk state returned by service.");
+      setState("PAYMENT_FAILED");
+    } catch (e) {
+      const status = e?.response?.status;
+      setError(status ? `Could not fetch exit status (HTTP ${status})` : "Could not fetch exit status");
+      setState("PAYMENT_FAILED");
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
 
-    const load = async () => {
-      try {
-        setError(undefined);
-        setState("LOADING");
-
-        const res = await ticketService.getTicketStatus(ticketId);
-
-        if (cancelled) return;
-
-        if (res.status === "INVALID") {
-          setInvalidReason(res.reason);
-          setState("INVALID");
-          return;
-        }
-
-        setEntryTime(res.ticket?.entryTime);
-        setDurationMinutes(res.parking?.durationMinutes);
-        setAmountCents(res.parking?.amountCents);
-
-        if (res.status === "PAID") {
-          setAlreadyPaid(true);
-          setState("ACCEPTED");
-          // simulate lifting barrier delay
-          return;
-        }
-
-        if (res.status === "PAYMENT_REQUIRED") {
-          setAlreadyPaid(false);
-          setState("PAYMENT_REQUIRED");
-
-          // Mock: auto-payment attempt (as if user taps a card)
-          // In real life: you’d trigger this when the NFC reader says “card present”.
-          const payment = await ticketService.pay(ticketId, res.parking.amountCents, {
-            forceFail: !!res.failPayment,
-          });
-
-          if (cancelled) return;
-
-          if (!payment.ok) {
-            setPaymentFailReason(payment.code);
-            setState("PAYMENT_FAILED");
-            return;
-          }
-
-          setState("ACCEPTED");
-          return;
-        }
-
-        // fallback
-        setError("Unknown kiosk state returned by service.");
-        setState("PAYMENT_FAILED");
-      } catch (e) {
-        if (cancelled) return;
-        console.error(e);
-        setError("Could not fetch exit status");
-        setState("PAYMENT_FAILED");
-      }
+    const run = async () => {
+      if (cancelled) return;
+      await loadStatus(ticketId);
+      setScanValue(ticketId ?? "");
     };
 
-    load();
+    run();
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticketId]);
 
+  const onScan = () => {
+    const value = scanValue.trim();
+    if (!value) return;
+    navigate(`/exit/${value}`);
+  };
+
+  const onPay = async () => {
+    if (!ticketId || !isUuid(ticketId)) return;
+
+    setBusy(true);
+    setPaymentFailReason(undefined);
+
+    try {
+      const res = await ticketService.pay(ticketId);
+
+      if (!res?.ok) {
+        setPaymentFailReason(res?.code);
+        setState("PAYMENT_FAILED");
+        return;
+      }
+
+      await ticketService.exit(ticketId);
+      await loadStatus(ticketId);
+
+      setState("ACCEPTED");
+    } catch (e) {
+      const status = e?.response?.status;
+      setPaymentFailReason(status ? `HTTP_${status}` : "UNEXPECTED_ERROR");
+      setState("PAYMENT_FAILED");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onExit = async () => {
+    if (!ticketId || !isUuid(ticketId)) return;
+
+    setBusy(true);
+    setPaymentFailReason(undefined);
+
+    try {
+      await ticketService.exit(ticketId);
+      await loadStatus(ticketId);
+      setState("ACCEPTED");
+    } catch (e) {
+      const status = e?.response?.status;
+      setPaymentFailReason(status ? `HTTP_${status}` : "UNEXPECTED_ERROR");
+      setState("PAYMENT_FAILED");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        bgcolor: "background.default",
-        py: 2,
-      }}
-    >
+    <Box sx={{minHeight: "100vh", display: "flex", alignItems: "center", bgcolor: "background.default", py: 2}}>
       <Container maxWidth="sm" sx={{px: 2}}>
         <Paper elevation={6} sx={{p: 2.5, borderRadius: 4}}>
           <Stack spacing={2.25}>
@@ -131,42 +174,85 @@ export const InternalMachineScreen = () => {
               />
             </Stack>
 
-            {/* Generic error (network, etc.) */}
+            {/* Dev scan */}
+            <Paper variant="outlined" sx={{p: 2, borderRadius: 3}}>
+              <Stack spacing={1.25}>
+                <Typography variant="body2" fontWeight={800}>
+                  Scan ticket (dev)
+                </Typography>
+
+                <Stack direction="row" spacing={1}>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    placeholder="Paste ticket UUID…"
+                    value={scanValue}
+                    onChange={(e) => setScanValue(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && onScan()}
+                  />
+                  <Button variant="contained" onClick={onScan} disabled={!scanValue.trim()}>
+                    Go
+                  </Button>
+                </Stack>
+              </Stack>
+            </Paper>
+
+            {/* Error */}
             {error && (
               <Alert severity="error" sx={{fontSize: "1rem"}}>
                 {error}
               </Alert>
             )}
 
-            {/* State body */}
+            {/* Body */}
             {state === "LOADING" && (
               <Paper variant="outlined" sx={{p: 2, borderRadius: 3}}>
                 <Typography variant="h6">Checking ticket…</Typography>
-                <Typography color="text.secondary">
-                  Please wait.
-                </Typography>
+                <Typography color="text.secondary">Please wait.</Typography>
               </Paper>
             )}
 
-            {state === "PAYMENT_REQUIRED" && (
-              <PaymentRequiredScreen
-                entryTime={entryTime}
-                durationMinutes={durationMinutes}
-                amountCents={amountCents}
-              />
+            {state === "PAYMENT_REQUIRED" && ticket && (
+              <Stack spacing={1.5}>
+                <PaymentRequiredScreen
+                  entryTime={ticket.entryTime}
+                  durationMinutes={ticket.durationMinutes}
+                  amountCents={ticket.amountCents}
+                />
+
+                <Button
+                  size="large"
+                  variant="contained"
+                  onClick={onPay}
+                  disabled={busy}
+                  sx={{minHeight: 56, fontWeight: 900}}
+                >
+                  {busy ? "Processing…" : "Pay & open barrier"}
+                </Button>
+              </Stack>
             )}
 
-            {state === "PAYMENT_FAILED" && (
-              <PaymentFailedScreen message={paymentFailReason}/>
+            {state === "PAID" && (
+              <Stack spacing={1.5}>
+                <Alert severity="success">Ticket already paid.</Alert>
+
+                <Button
+                  size="large"
+                  variant="contained"
+                  onClick={onExit}
+                  disabled={busy}
+                  sx={{minHeight: 56, fontWeight: 900}}
+                >
+                  {busy ? "Opening…" : "Open barrier"}
+                </Button>
+              </Stack>
             )}
 
-            {state === "INVALID" && (
-              <InvalidTicketScreen reason={invalidReason}/>
-            )}
+            {state === "PAYMENT_FAILED" && <PaymentFailedScreen message={paymentFailReason}/>}
 
-            {state === "ACCEPTED" && (
-              <PaymentAcceptedScreen alreadyPaid={alreadyPaid}/>
-            )}
+            {state === "INVALID" && <InvalidTicketScreen reason={invalidReason}/>}
+
+            {state === "ACCEPTED" && <PaymentAcceptedScreen alreadyPaid={false}/>}
 
             <Typography variant="caption" color="text.secondary" sx={{textAlign: "center"}}>
               Ticket ID: {ticketId || "—"}

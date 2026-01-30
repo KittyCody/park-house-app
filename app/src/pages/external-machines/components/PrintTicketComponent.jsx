@@ -28,7 +28,6 @@ export const PrintTicketComponent = ({onPrintedTicket}) => {
       });
   };
 
-  /* 🎫 SUCCESS STATE */
   if (ticket) {
     return (
       <Paper
@@ -55,7 +54,6 @@ export const PrintTicketComponent = ({onPrintedTicket}) => {
     );
   }
 
-  /* 🖨️ DEFAULT STATE */
   return (
     <Stack spacing={2}>
       {error && (
