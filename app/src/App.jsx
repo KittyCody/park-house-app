@@ -4,6 +4,7 @@ import {ProblemScreen} from "./pages/ProblemScreen.jsx";
 import {InternalMachineScreen} from "./pages/internal-machines/InternalMachineScreen.jsx";
 import {BrowserRouter, Navigate, Route, Routes} from "react-router";
 import {ExternalMachineScreen} from "./pages/external-machines/ExternalMachineScreen.jsx";
+import {ScanTicketScreen} from "./pages/internal-machines/scanTicketScreen.jsx";
 
 function App() {
 
@@ -21,8 +22,9 @@ function App() {
     case 'internal_machine':
       return <BrowserRouter>
         <Routes>
+          <Route path="/exit" element={<ScanTicketScreen/>}/>
           <Route path="/exit/:ticketId" element={<InternalMachineScreen/>}/>
-          <Route path="/" element={<Navigate to="/exit/unknown"/>}/>
+          <Route path="/" element={<Navigate to="/exit"/>}/>
         </Routes>
       </BrowserRouter>
     case 'external_machine':

@@ -4,6 +4,14 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import BlockIcon from "@mui/icons-material/Block";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
+const ERROR_MESSAGES = {
+  CARD_DECLINED: "Card declined. Please try another card.",
+  NETWORK_CONNECTION_ISSUE: "Network error. Please try again.",
+  INVALID_TICKET: "Invalid or unreadable ticket.",
+  ALREADY_PAID: "This ticket has already been paid.",
+  DEFAULT: "Payment failed. Please contact assistance.",
+};
+
 const formatMoney = (cents) =>
   new Intl.NumberFormat(undefined, {style: "currency", currency: "EUR"}).format((cents ?? 0) / 100);
 
@@ -32,7 +40,7 @@ const Row = ({label, value}) => (
   </Stack>
 );
 
-/** 1) Ticket needs payment */
+/** Ticket needs payment */
 export const PaymentRequiredScreen = ({entryTime, durationMinutes, amountCents}) => {
   return (
     <Paper elevation={4} sx={{p: 2.5, borderRadius: 3}}>
@@ -73,8 +81,10 @@ export const PaymentRequiredScreen = ({entryTime, durationMinutes, amountCents})
   );
 };
 
-/** 2) Payment failed */
+/** payment failed */
 export const PaymentFailedScreen = ({message}) => {
+  const text = ERROR_MESSAGES[message] ?? ERROR_MESSAGES.DEFAULT;
+
   return (
     <Paper elevation={4} sx={{p: 2.5, borderRadius: 3}}>
       <Stack spacing={2} alignItems="center">
@@ -93,14 +103,14 @@ export const PaymentFailedScreen = ({message}) => {
           severity="error"
           sx={{width: "100%", fontSize: "1rem", "& .MuiAlert-message": {width: "100%"}}}
         >
-          <strong>Reason:</strong> {message || "Payment declined."}
+          <strong>Reason:</strong> {text}
         </Alert>
       </Stack>
     </Paper>
   );
 };
 
-/** 3) Invalid ticket */
+/** Invalid ticket */
 export const InvalidTicketScreen = ({reason}) => {
   return (
     <Paper elevation={4} sx={{p: 2.5, borderRadius: 3}}>
@@ -125,7 +135,7 @@ export const InvalidTicketScreen = ({reason}) => {
   );
 };
 
-/** 4) Payment accepted OR already paid */
+/** Payment accepted OR already paid */
 export const PaymentAcceptedScreen = ({alreadyPaid}) => {
   return (
     <Paper elevation={4} sx={{p: 2.5, borderRadius: 3, bgcolor: "success.light"}}>
