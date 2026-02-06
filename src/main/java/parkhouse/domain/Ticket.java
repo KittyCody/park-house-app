@@ -68,8 +68,8 @@ public class Ticket {
         return timeOfPayment;
     }
 
-    public void setTimeOfPayment(LocalDateTime timeOfpayment) {
-        this.timeOfPayment = timeOfpayment;
+    public void setTimeOfPayment(LocalDateTime timeOfPayment) {
+        this.timeOfPayment = timeOfPayment;
     }
 }
 

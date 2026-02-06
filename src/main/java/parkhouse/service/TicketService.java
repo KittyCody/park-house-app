@@ -11,6 +11,7 @@ import parkhouse.domain.ParkingSettings;
 import parkhouse.domain.Ticket;
 import parkhouse.domain.error.InvalidOperationalHours;
 import parkhouse.domain.error.NotEnoughSpaces;
+import parkhouse.dto.TicketStatusResponse;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -60,17 +61,6 @@ public class TicketService {
         log.info("Ticket created successfully : id={}, hour={}", saved.getId(), now);
 
         return saved;
-    }
-
-    public Ticket getTicket(UUID id) {
-
-        log.debug("Retrieving ticket {}", id);
-
-        return tickets.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Ticket not found : {}", id);
-                    return new IllegalArgumentException("Ticket with id " + id + " not found");
-                });
     }
 
     private void validateOperationalHours() {
@@ -157,4 +147,33 @@ public class TicketService {
 
         tickets.save(ticket);
     }
+
+    public TicketStatusResponse getStatus(UUID ticketId) {
+
+        var ticketOpt = tickets.findById(ticketId);
+
+        if (ticketOpt.isEmpty()) {
+            return TicketStatusResponse.invalid("TICKET_NOT_FOUND");
+        }
+
+        var ticket = ticketOpt.get();
+
+        if (ticket.getTimeOfExit() != null) {
+            return TicketStatusResponse.invalid("TICKET_ALREADY_EXITED");
+        }
+
+        var now = LocalDateTime.now(clock);
+
+        int durationMinutes = (int) Duration.between(ticket.getTimeOfEntry(), now).toMinutes();
+        durationMinutes = Math.max(0, durationMinutes);
+
+        int amountCents = calculatePrice(ticketId);
+
+        if (ticket.getTimeOfPayment() != null) {
+            return TicketStatusResponse.paid(ticket.getTimeOfEntry(), durationMinutes, amountCents);
+        }
+
+        return TicketStatusResponse.paymentRequired(ticket.getTimeOfEntry(), durationMinutes, amountCents);
+    }
+
 }

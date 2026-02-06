@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import parkhouse.dto.TicketResponse;
+import parkhouse.dto.TicketStatusResponse;
 import parkhouse.service.TicketService;
 
 import java.util.UUID;
@@ -80,5 +81,13 @@ public class TicketController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{id}/status")
+    @PreAuthorize("hasRole('EXIT_GATE_MACHINE')")
+    public ResponseEntity<TicketStatusResponse> getStatus(@PathVariable UUID id) {
+        log.info("Status request for ticket {}", id);
 
+        var status = tickets.getStatus(id);
+
+        return ResponseEntity.ok(status);
+    }
 }
