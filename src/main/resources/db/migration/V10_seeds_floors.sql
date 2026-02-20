@@ -1,1 +1,2 @@
-INSERT INTO floors (id, capacity) VALUES (1,20)
+INSERT INTO floors (id, capacity)
+VALUES (1, 200)

@@ -8,7 +8,8 @@ public record TicketResponse(
         UUID entryGateId,
         UUID exitGateId,
         LocalDateTime timeOfEntry,
-        LocalDateTime timeOfExit
+        LocalDateTime timeOfExit,
+        int floorId
 ) {
     public static TicketResponse of(parkhouse.domain.Ticket t) {
         return new TicketResponse(
@@ -16,7 +17,8 @@ public record TicketResponse(
                 t.getEntryGateId(),
                 t.getExitGateId(),
                 t.getTimeOfEntry(),
-                t.getTimeOfExit()
+                t.getTimeOfExit(),
+                t.getFloorId()
         );
     }
 }

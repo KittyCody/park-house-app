@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import parkhouse.dto.CreateEntryRequest;
 import parkhouse.dto.TicketResponse;
 import parkhouse.dto.TicketStatusResponse;
 import parkhouse.service.TicketService;
@@ -28,21 +29,21 @@ public class TicketController {
 
     @PostMapping("/entries")
     @PreAuthorize("hasRole('ENTRY_GATE_MACHINE')")
-    public ResponseEntity<TicketResponse> createEntry(@AuthenticationPrincipal Jwt token,
-                                                      UriComponentsBuilder uri) {
+    public ResponseEntity<TicketResponse> createEntry(
+            @AuthenticationPrincipal Jwt token,
+            @RequestBody CreateEntryRequest request,
+            UriComponentsBuilder uri) {
 
         var gateId = UUID.fromString(token.getSubject());
 
-        log.info("Ticket entry request from gate {}", gateId);
+        var created = tickets.createEntry(gateId, request.floorId());
 
-        var created = tickets.createEntry(gateId);
         var location = uri.path("/api/v1/tickets/{id}")
                 .buildAndExpand(created.getId())
                 .toUri();
 
-        log.info("Ticket created successfully: id={}, gate={}", created.getId(), gateId);
-
-        return ResponseEntity.created(location).body(TicketResponse.of(created));
+        return ResponseEntity.created(location)
+                .body(TicketResponse.of(created));
     }
 
     @GetMapping("/{id}/price")

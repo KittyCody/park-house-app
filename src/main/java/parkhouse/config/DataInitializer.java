@@ -13,7 +13,6 @@ import parkhouse.domain.ParkingSettings;
 import parkhouse.domain.Role;
 import parkhouse.domain.User;
 
-import java.time.LocalDateTime;
 import java.util.Set;
 
 @Configuration
@@ -62,7 +61,7 @@ public class DataInitializer {
     private void ensureFloor() {
         if (floors.existsById(1)) return;
 
-        var floor = new Floor(200, LocalDateTime.now());
+        var floor = new Floor(200);
         floors.save(floor);
     }
 

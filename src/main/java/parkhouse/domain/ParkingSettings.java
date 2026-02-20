@@ -13,8 +13,13 @@ public class ParkingSettings {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int id;
 
+    @Column(nullable = false)
     private int openHour;
+
+    @Column(nullable = false)
     private int closeHour;
+
+    @Column(nullable = false)
     private int pricePerHour;
 
     protected ParkingSettings() {

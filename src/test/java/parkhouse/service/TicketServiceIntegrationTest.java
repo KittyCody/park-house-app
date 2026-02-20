@@ -55,42 +55,46 @@ class TicketServiceIntegrationTest {
 
     @Test
     void createEntry_persistsTicket_inRealDatabase() {
-        floors.save(new Floor(100, LocalDateTime.now(clock)));
+        var floor = floors.save(new Floor(200));
         parkingSettings.save(new ParkingSettings(0, 23, 3));
 
         UUID gateId = UUID.randomUUID();
 
-        var ticket = ticketService.createEntry(gateId);
+        var ticket = ticketService.createEntry(gateId, floor.getId());
 
         var fromDb = tickets.findById(ticket.getId());
         assertThat(fromDb).isPresent();
         assertThat(fromDb.get().getEntryGateId()).isEqualTo(gateId);
+        assertThat(fromDb.get().getFloorId()).isEqualTo(floor.getId());
     }
 
     @Test
     void createEntry_throwsInvalidOperationalHours_whenClosed() {
-        floors.save(new Floor(100, LocalDateTime.now(clock)));
+        floors.save(new Floor(200));
         parkingSettings.save(new ParkingSettings(8, 22, 3));
 
         UUID gateId = UUID.randomUUID();
+        int floorId = 1;
 
-        assertThatThrownBy(() -> ticketService.createEntry(gateId))
+        assertThatThrownBy(() -> ticketService.createEntry(gateId, floorId))
                 .isInstanceOf(InvalidOperationalHours.class);
     }
 
     @Test
     void createEntry_throwsNotEnoughSpaces_whenNoCapacityLeft() {
-        floors.save(new Floor(1, LocalDateTime.now(clock)));
+        var floor = floors.save(new Floor(1));
         parkingSettings.save(new ParkingSettings(0, 23, 3));
 
         UUID gateId1 = UUID.randomUUID();
         UUID gateId2 = UUID.randomUUID();
 
-        ticketService.createEntry(gateId1);
+        int floorId = floor.getId();
+
+        ticketService.createEntry(gateId1, floorId);
 
         assertThat(ticketService.getAvailableSpaces()).isZero();
 
-        assertThatThrownBy(() -> ticketService.createEntry(gateId2))
+        assertThatThrownBy(() -> ticketService.createEntry(gateId2, floorId))
                 .isInstanceOf(NotEnoughSpaces.class);
     }
 

@@ -1,9 +1,6 @@
 package parkhouse.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,6 +11,10 @@ public class Ticket {
 
     @Id
     private UUID id;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "floor_id", nullable = false)
+    private Floor floor;
 
     @Column(nullable = false)
     private UUID entryGateId;
@@ -30,10 +31,11 @@ public class Ticket {
     protected Ticket() {
     }
 
-    public Ticket(UUID entryGateId, LocalDateTime now) {
+    public Ticket(UUID entryGateId, LocalDateTime now, Floor floor) {
         this.id = UUID.randomUUID();
         this.entryGateId = entryGateId;
         this.timeOfEntry = now;
+        this.floor = floor;
     }
 
     public UUID getId() {
@@ -70,6 +72,10 @@ public class Ticket {
 
     public void setTimeOfPayment(LocalDateTime timeOfPayment) {
         this.timeOfPayment = timeOfPayment;
+    }
+
+    public int getFloorId() {
+        return floor.getId();
     }
 }
 

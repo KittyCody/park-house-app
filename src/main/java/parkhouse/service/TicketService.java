@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import parkhouse.context.FloorRepository;
 import parkhouse.context.ParkingSettingsRepository;
 import parkhouse.context.TicketRepository;
+import parkhouse.domain.Floor;
 import parkhouse.domain.ParkingSettings;
 import parkhouse.domain.Ticket;
 import parkhouse.domain.error.InvalidOperationalHours;
@@ -39,28 +40,22 @@ public class TicketService {
     }
 
     @Transactional
-    public Ticket createEntry(UUID entryGateId) {
+    public Ticket createEntry(UUID entryGateId, int floorId) {
 
-        log.info("Ticket creation requested at gate {}", entryGateId);
+        log.info("Ticket creation requested at gate {}, floor {}", entryGateId, floorId);
 
         validateOperationalHours();
 
         long available = getAvailableSpaces();
-        log.debug("Available spaces before ticket creation: {}", available);
+        if (available < 1) throw new NotEnoughSpaces();
 
-        if (available < 1) {
-            log.warn("Entry denied: no available spaces");
-            throw new NotEnoughSpaces();
-        }
+        Floor floor = floors.findById(floorId)
+                .orElseThrow(() -> new IllegalArgumentException("Floor " + floorId + " not found"));
 
         var now = LocalDateTime.now(clock);
-        var ticket = new Ticket(entryGateId, now);
+        var ticket = new Ticket(entryGateId, now, floor);
 
-        Ticket saved = tickets.save(ticket);
-
-        log.info("Ticket created successfully : id={}, hour={}", saved.getId(), now);
-
-        return saved;
+        return tickets.save(ticket);
     }
 
     private void validateOperationalHours() {
