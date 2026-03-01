@@ -1,5 +1,6 @@
 package parkhouse.controller;
 
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,7 @@ public class TicketController {
     @PreAuthorize("hasRole('ENTRY_GATE_MACHINE')")
     public ResponseEntity<TicketResponse> createEntry(
             @AuthenticationPrincipal Jwt token,
+            @Valid
             @RequestBody CreateEntryRequest request,
             UriComponentsBuilder uri) {
 

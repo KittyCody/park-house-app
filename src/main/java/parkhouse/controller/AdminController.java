@@ -3,6 +3,7 @@ package parkhouse.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import parkhouse.dto.ParkingSettingsChangeHoursRequest;
 import parkhouse.dto.ParkingSettingsChangePriceRequest;
@@ -20,7 +21,8 @@ public class AdminController {
 
     @PostMapping("/api/v1/admin/settings/working-hours")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateWorkingHours(ParkingSettingsChangeHoursRequest payload) {
+    public ResponseEntity<?> updateWorkingHours(@RequestBody
+                                                ParkingSettingsChangeHoursRequest payload) {
         adminService.ChangeWorkingHours(payload);
 
         return ResponseEntity.noContent().build();
@@ -28,7 +30,8 @@ public class AdminController {
 
     @PostMapping("/api/v1/admin/settings/price")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updatePrice(ParkingSettingsChangePriceRequest payload) {
+    public ResponseEntity<?> updatePrice(@RequestBody
+                                         ParkingSettingsChangePriceRequest payload) {
         adminService.ChangePrice(payload);
         return ResponseEntity.noContent().build();
     }

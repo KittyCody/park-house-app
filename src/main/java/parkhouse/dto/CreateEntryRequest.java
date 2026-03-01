@@ -1,4 +1,9 @@
 package parkhouse.dto;
 
-public record CreateEntryRequest(int floorId) {
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
+public record CreateEntryRequest(
+        @NotNull @Min(1) Integer floorId
+) {
 }

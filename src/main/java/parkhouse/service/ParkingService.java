@@ -8,7 +8,6 @@ import parkhouse.dto.StatusResponse;
 
 import java.time.LocalDateTime;
 
-
 @Service
 public class ParkingService {
 
@@ -35,10 +34,12 @@ public class ParkingService {
                 });
 
         var now = LocalDateTime.now().getHour();
-        var isOperational = now > settings.openHour() && now < settings.closeHour();
-
+        var isOperational = now >= settings.openHour() && now < settings.closeHour();
+        
         log.info("Parking open : {}", isOperational);
 
-        return new StatusResponse(availableSpaces, isOperational);
+        Integer floorId = 1; // TODO: make it dynamic (e.g., from machine/gate config)
+
+        return new StatusResponse(availableSpaces, isOperational, floorId);
     }
 }

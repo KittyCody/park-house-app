@@ -1,4 +1,4 @@
 package parkhouse.dto;
 
-public record StatusResponse(long availableSpaces, boolean isOperational) {
+public record StatusResponse(long availableSpaces, boolean isOperational, Integer floorId) {
 }

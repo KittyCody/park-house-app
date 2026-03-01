@@ -4,7 +4,7 @@ import {TicketComponent} from "./TicketComponent.jsx";
 import {Alert, Box, Button, CircularProgress, Paper, Stack, Typography,} from "@mui/material";
 import LocalParkingIcon from "@mui/icons-material/LocalParking";
 
-export const PrintTicketComponent = ({onPrintedTicket}) => {
+export const PrintTicketComponent = ({floorId, onPrintedTicket}) => {
   const [ticket, setTicket] = useState(undefined);
   const [error, setError] = useState(undefined);
   const [loading, setLoading] = useState(false);
@@ -14,7 +14,7 @@ export const PrintTicketComponent = ({onPrintedTicket}) => {
     setLoading(true);
 
     ticketService
-      .createTicket()
+      .createTicket(floorId)
       .then((ticket) => {
         setTicket(ticket);
         onPrintedTicket();

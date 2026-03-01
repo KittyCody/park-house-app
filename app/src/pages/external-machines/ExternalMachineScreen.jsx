@@ -9,6 +9,7 @@ export const ExternalMachineScreen = () => {
   const [availableSpaces, setAvailableSpaces] = useState(undefined);
   const [isOpen, setIsOpen] = useState(undefined);
   const [error, setError] = useState(undefined);
+  const [floorId, setFloorId] = useState(undefined);
 
   const onTicketPrinted = useCallback(() => {
     setAvailableSpaces((current) => current - 1);
@@ -20,6 +21,7 @@ export const ExternalMachineScreen = () => {
       .then((status) => {
         setAvailableSpaces(status.availableSpaces);
         setIsOpen(status.isOperational);
+        setFloorId(status.floorId);
       })
       .catch((err) => {
         setError("Could not fetch parking status");
@@ -27,7 +29,7 @@ export const ExternalMachineScreen = () => {
       });
   }, []);
 
-  const loading = isOpen === undefined || availableSpaces === undefined;
+  const loading = isOpen === undefined || availableSpaces === undefined || floorId === undefined;
 
   const statusLabel = loading
     ? "Loading…"
@@ -133,7 +135,7 @@ export const ExternalMachineScreen = () => {
                 {/* Main action area */}
                 <Box sx={{mt: 0.5}}>
                   {availableSpaces > 0 ? (
-                    <PrintTicketComponent onPrintedTicket={onTicketPrinted}/>
+                    <PrintTicketComponent floorId={floorId} onPrintedTicket={onTicketPrinted}/>
                   ) : (
                     <ParkingFullComponent/>
                   )}
