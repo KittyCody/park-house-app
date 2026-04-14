@@ -1,4 +1,6 @@
 package parkhouse.dto;
 
-public record ParkingSettingsChangePriceRequest(int pricePerHour) {
+import jakarta.validation.constraints.Positive;
+
+public record ParkingSettingsChangePriceRequest(@Positive int pricePerHour) {
 }

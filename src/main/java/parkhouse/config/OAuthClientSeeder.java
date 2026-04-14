@@ -50,7 +50,7 @@ public class OAuthClientSeeder {
                         .setting("roles", new ArrayList<>(roles))
                         .build())
                 .tokenSettings(TokenSettings.builder()
-                        .accessTokenTimeToLive(Duration.ofDays(7))
+                        .accessTokenTimeToLive(Duration.ofDays(90))
                         .build())
                 .build();
 

@@ -133,7 +133,8 @@ public class SecurityConfig {
 
         RSAKey rsa = new RSAKey.Builder(publicKey)
                 .privateKey(privateKey)
-                .keyID("kid-6cc8cbf5-a83c-4253-86dc-a1c59d69e0a2")
+                .keyID("" +
+                        "kid-6cc8cbf5-a83c-4253-86dc-a1c59d69e0a2")
                 .algorithm(JWSAlgorithm.RS256)
                 .build();
 
@@ -187,7 +188,7 @@ public class SecurityConfig {
         var roles = jwt.getClaimAsStringList("roles");
         if (roles != null) {
             roles.forEach(r ->
-                    authorities.add(new SimpleGrantedAuthority(r))   // r is already ROLE_...
+                    authorities.add(new SimpleGrantedAuthority(r))
             );
         }
 

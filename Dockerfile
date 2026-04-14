@@ -8,7 +8,8 @@ WORKDIR /app
 COPY target/park-house-0.0.1-SNAPSHOT.jar app.jar
 
 # the port exposed by SpringBoot
-EXPOSE 8080
+EXPOSE 5140
 
 # Commande to start the app
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+
