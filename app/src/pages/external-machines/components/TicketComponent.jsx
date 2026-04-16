@@ -80,10 +80,12 @@ export const TicketComponent = ({ticket}) => {
 
 /* Small helper for aligned rows */
 const Row = ({label, value}) => (
-  <Stack direction="row" justifyContent="space-between">
-    <Typography variant="body2" fontWeight={600}>
+  <Stack direction="row" justifyContent="space-between" gap={1}>
+    <Typography variant="body2" fontWeight={600} flexShrink={0}>
       {label}
     </Typography>
-    <Typography variant="body2">{value}</Typography>
+    <Typography variant="body2" textAlign="right" sx={{wordBreak: "break-all"}}>
+      {value}
+    </Typography>
   </Stack>
 );
