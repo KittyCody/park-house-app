@@ -89,7 +89,11 @@ export const PrintTicketComponent = ({floorId, onPrintedTicket}) => {
             >
               {loading ? (
                 <>
-                  <CircularProgress size={26} sx={{mr: 1}}/>
+                  <CircularProgress
+                    size={26}
+                    sx={{mr: 1}}
+                    aria-label="Printing ticket"
+                  />
                   Printing…
                 </>
               ) : (
