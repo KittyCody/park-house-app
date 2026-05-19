@@ -4,7 +4,7 @@ import {ProblemScreen} from "./pages/ProblemScreen.jsx";
 import {InternalMachineScreen} from "./pages/internal-machines/InternalMachineScreen.jsx";
 import {BrowserRouter, Navigate, Route, Routes} from "react-router";
 import {ExternalMachineScreen} from "./pages/external-machines/ExternalMachineScreen.jsx";
-import {ScanTicketScreen} from "./pages/internal-machines/scanTicketScreen.jsx";
+import {ScanTicketScreen} from "./pages/internal-machines/ScanTicketScreen.jsx";
 
 function App() {
 
