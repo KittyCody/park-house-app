@@ -95,7 +95,9 @@ curl -u parking-internal-machine-01:change_me \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=client_credentials" \
   http://localhost:5140/oauth2/token
+  ```
 
+```bash
 # Admin
 curl -u parking-admin:change_me \
   -H "Content-Type: application/x-www-form-urlencoded" \
