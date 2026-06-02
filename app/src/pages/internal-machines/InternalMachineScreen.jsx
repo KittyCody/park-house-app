@@ -1,6 +1,6 @@
 import {useEffect, useMemo, useState} from "react";
-import {Alert, Box, Button, Chip, Container, Paper, Stack, TextField, Typography} from "@mui/material";
-import {useNavigate, useParams} from "react-router";
+import {Alert, Box, Button, Chip, Container, Paper, Stack, Typography} from "@mui/material";
+import {useParams} from "react-router";
 import {ticketService} from "../../services/ticket-service.js";
 import {
   InvalidTicketScreen,
@@ -23,7 +23,6 @@ const CHIP = {
 
 export const InternalMachineScreen = () => {
   const {ticketId} = useParams();
-  const navigate = useNavigate();
 
   const [state, setState] = useState("LOADING");
   const [error, setError] = useState(undefined);
@@ -33,8 +32,6 @@ export const InternalMachineScreen = () => {
   const [paymentFailReason, setPaymentFailReason] = useState(undefined);
 
   const [busy, setBusy] = useState(false);
-
-  const [scanValue, setScanValue] = useState("");
 
   const titleChip = useMemo(() => CHIP[state] ?? CHIP.LOADING, [state]);
 
@@ -92,7 +89,6 @@ export const InternalMachineScreen = () => {
     const run = async () => {
       if (cancelled) return;
       await loadStatus(ticketId);
-      setScanValue(ticketId ?? "");
     };
 
     run();
@@ -101,12 +97,6 @@ export const InternalMachineScreen = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticketId]);
-
-  const onScan = () => {
-    const value = scanValue.trim();
-    if (!value) return;
-    navigate(`/exit/${value}`);
-  };
 
   const onPay = async () => {
     if (!ticketId || !isUuid(ticketId)) return;
@@ -173,29 +163,6 @@ export const InternalMachineScreen = () => {
                 sx={{fontWeight: 900, fontSize: "0.95rem", height: 36}}
               />
             </Stack>
-
-            {/* Dev scan */}
-            <Paper variant="outlined" sx={{p: 2, borderRadius: 3}}>
-              <Stack spacing={1.25}>
-                <Typography variant="body2" fontWeight={800}>
-                  Scan ticket (dev)
-                </Typography>
-
-                <Stack direction="row" spacing={1}>
-                  <TextField
-                    size="small"
-                    fullWidth
-                    placeholder="Paste ticket UUID…"
-                    value={scanValue}
-                    onChange={(e) => setScanValue(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && onScan()}
-                  />
-                  <Button variant="contained" onClick={onScan} disabled={!scanValue.trim()}>
-                    Go
-                  </Button>
-                </Stack>
-              </Stack>
-            </Paper>
 
             {/* Error */}
             {error && (
