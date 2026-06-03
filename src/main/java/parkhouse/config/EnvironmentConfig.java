@@ -44,7 +44,7 @@ public class EnvironmentConfig {
     }
 
     @Bean
-    @Profile({"test", "prod"})
+    @Profile({"test"})
     public static PropertySourcesPlaceholderConfigurer defaultPropertiesConfigurer() {
         return new PropertySourcesPlaceholderConfigurer();
     }
