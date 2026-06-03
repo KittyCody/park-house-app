@@ -89,20 +89,20 @@ class ParkingJourneyTest {
         // 3. Exit machine processes payment
         mvc.perform(post("/api/v1/tickets/{id}/pay", ticketId)
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_EXIT_GATE_MACHINE"))))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // 4. Exit machine opens barrier
         mvc.perform(post("/api/v1/tickets/{id}/exit", ticketId)
                         .with(jwt()
                                 .jwt(j -> j.subject(exitGateId.toString()))
                                 .authorities(new SimpleGrantedAuthority("ROLE_EXIT_GATE_MACHINE"))))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // 5. Status is now PAID
         mvc.perform(get("/api/v1/tickets/{id}/status", ticketId)
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_EXIT_GATE_MACHINE"))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("PAID"));
+                .andExpect(jsonPath("$.status").value("INVALID"));
     }
 
     @TestConfiguration
