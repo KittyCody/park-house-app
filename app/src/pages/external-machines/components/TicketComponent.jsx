@@ -50,6 +50,7 @@ export const TicketComponent = ({ticket}) => {
             size={140}
             level="M"
             includeMargin={true}
+            aria-label="Ticket QR code"
           />
         </Box>
 
