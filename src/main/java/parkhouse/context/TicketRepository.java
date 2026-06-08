@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface TicketRepository extends JpaRepository<Ticket, UUID> {
     int countAllByTimeOfExitIsNull();
+
+    int countByFloor_IdAndTimeOfExitIsNull(int floorId);
 }

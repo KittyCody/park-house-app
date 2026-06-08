@@ -1,6 +1,6 @@
 import {Alert, Box, Chip, Paper, Stack, Typography} from "@mui/material";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutlined";
 import BlockIcon from "@mui/icons-material/Block";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
