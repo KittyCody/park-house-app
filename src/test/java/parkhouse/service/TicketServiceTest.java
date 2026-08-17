@@ -44,7 +44,7 @@ public class TicketServiceTest {
         ticketService = new TicketService(tickets, floors, parkingSettings, clock);
 
         when(parkingSettings.findTopByOrderByIdDesc())
-                .thenReturn(Optional.of(new ParkingSettings(8, 22, 3)));
+                .thenReturn(Optional.of(new ParkingSettings(8, 22, 300)));
         lenient().when(floors.sumCapacity()).thenReturn(Optional.of(100L));
         lenient().when(tickets.countAllByTimeOfExitIsNull()).thenReturn(10);
     }
@@ -86,7 +86,7 @@ public class TicketServiceTest {
                 new TicketService(tickets, floors, parkingSettings, nightClock);
 
         when(parkingSettings.findTopByOrderByIdDesc())
-                .thenReturn(Optional.of(new ParkingSettings(8, 22, 3)));
+                .thenReturn(Optional.of(new ParkingSettings(8, 22, 300)));
 
         assertThatThrownBy(() -> closedService.createEntry(UUID.randomUUID(), 1))
                 .isInstanceOf(InvalidOperationalHours.class);

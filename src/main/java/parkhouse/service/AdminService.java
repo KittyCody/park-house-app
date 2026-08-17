@@ -37,7 +37,7 @@ public class AdminService {
 
     public void ChangePrice(ParkingSettingsChangePriceRequest payload) {
         var currentSettings = parkingSettings.findTopByOrderByIdDesc().orElseThrow();
-        currentSettings.updatePrice(payload.pricePerHour());
+        currentSettings.updatePricePerHourCents(payload.pricePerHourCents());
 
         this.parkingSettings.save(currentSettings);
     }

@@ -20,12 +20,12 @@ public class ParkingSettings {
     private int closeHour;
 
     @Column(nullable = false)
-    private int pricePerHour;
+    private int pricePerHourCents;
 
     protected ParkingSettings() {
     }
 
-    public ParkingSettings(int openHour, int closeHour, int pricePerHour) {
+    public ParkingSettings(int openHour, int closeHour, int pricePerHourCents) {
 
         if (!isValidOperationalHours(openHour, closeHour)) {
             throw new InvalidOperationalHours();
@@ -33,7 +33,7 @@ public class ParkingSettings {
 
         this.openHour = openHour;
         this.closeHour = closeHour;
-        this.pricePerHour = pricePerHour;
+        this.pricePerHourCents = pricePerHourCents;
     }
 
     public static boolean isValidOperationalHours(int openHour, int closeHour) {
@@ -48,7 +48,7 @@ public class ParkingSettings {
     }
 
     public static ParkingSettings createDefault() {
-        return new ParkingSettings(8, 22, 3);
+        return new ParkingSettings(8, 22, 300);
     }
 
     public void updateOperationalHours(int openHour, int closeHour) {
@@ -60,8 +60,8 @@ public class ParkingSettings {
         this.closeHour = closeHour;
     }
 
-    public void updatePrice(int pricePerHour) {
-        this.pricePerHour = pricePerHour;
+    public void updatePricePerHourCents(int pricePerHourCents) {
+        this.pricePerHourCents = pricePerHourCents;
     }
 
     public int openHour() {
@@ -72,8 +72,8 @@ public class ParkingSettings {
         return closeHour;
     }
 
-    public int pricePerHour() {
-        return pricePerHour;
+    public int pricePerHourCents() {
+        return pricePerHourCents;
     }
 
     public int getId() {

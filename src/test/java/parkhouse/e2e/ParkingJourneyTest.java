@@ -58,7 +58,7 @@ class ParkingJourneyTest {
         parkingSettings.deleteAll();
 
         floorId = floors.save(new Floor(50)).getId();
-        parkingSettings.save(new ParkingSettings(0, 23, 3));
+        parkingSettings.save(new ParkingSettings(0, 23, 300));
     }
 
     @Test

@@ -106,7 +106,7 @@ public class TicketService {
         long hours = Duration.between(ticket.getTimeOfEntry(), now).toHours();
         hours = Math.max(1, hours);
 
-        return (int) hours * settings.pricePerHour();
+        return (int) hours * settings.pricePerHourCents();
     }
 
     @Transactional

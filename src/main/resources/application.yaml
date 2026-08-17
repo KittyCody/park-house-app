@@ -17,6 +17,9 @@ spring:
     default-property-inclusion: non_null
   flyway:
     enabled: true
+    # {vendor} resolves to "postgresql" in production and "h2" in tests, so
+    # Postgres-only migrations stay out of the H2 test database
+    locations: classpath:db/migration,classpath:db/migration/{vendor}
 app:
   issuer: ${ISSUER}
   keystore:
